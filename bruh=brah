@@ -1,0 +1,9 @@
+Note - If you want to remove jump bug : 
+
+delete Animate (StarterCharacterScripts)
+delete Leaning (StarterCharacterScripts)
+delete Animations (ReplicatedFirst)
+
+(This does not affect the gun system) -FEGKM
+
+https://www.mediafire.com/file/xmjbt8au8h0nfj8/CTRL+++BRUH.zip/file
