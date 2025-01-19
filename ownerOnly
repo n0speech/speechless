@@ -1,0 +1,63 @@
+-- Place this script in ServerScriptService
+
+local Players = game:GetService("Players")
+local ServerScriptService = game:GetService("ServerScriptService")
+local syncFolder = ServerScriptService:FindFirstChild("sync")
+
+-- Replace this with the UserId of the owner
+local ownerUser Id = 12345678 -- Change this to your Roblox UserId
+
+-- Function to give tools to the owner
+local function giveToolsToOwner(player)
+    if player.UserId == ownerUser Id then
+        if syncFolder then
+            for _, tool in ipairs(syncFolder:GetChildren()) do
+                if tool:IsA("Tool") then
+                    local clonedTool = tool:Clone()
+                    clonedTool.Parent = player.Backpack
+                end
+            end
+        else
+            warn("Sync folder not found in ServerScriptService.")
+        end
+    else
+        -- Log unauthorized access attempt
+        warn("Unauthorized access attempt by: " .. player.Name)
+    end
+end
+
+-- Function to remove tools from unauthorized players
+local function removeUnauthorizedTools(player)
+    for _, tool in ipairs(player.Backpack:GetChildren()) do
+        if syncFolder:FindFirstChild(tool.Name) then
+            tool:Destroy() -- Remove unauthorized tools
+            warn("Removed unauthorized tool from: " .. player.Name)
+        end
+    end
+end
+
+-- Connect to the PlayerAdded event
+Players.PlayerAdded:Connect(function(player)
+    -- Give tools to the owner immediately upon joining
+    giveToolsToOwner(player)
+
+    -- Connect to PlayerRemoving event to clean up tools
+    player.AncestryChanged:Connect(function(_, parent)
+        if not parent then
+            removeUnauthorizedTools(player)
+        end
+    end)
+
+    -- Periodic check for unauthorized tools
+    while true do
+        wait(5) -- Check every 5 seconds
+        if player.UserId ~= ownerUser Id then
+            removeUnauthorizedTools(player)
+        end
+    end
+end)
+
+-- Optional: Give tools to the owner if they are already in the game
+for _, player in ipairs(Players:GetPlayers()) do
+    giveToolsToOwner(player)
+end
