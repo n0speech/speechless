@@ -1,0 +1,65 @@
+local Lighting = game:GetService("Lighting")
+local RunService = game:GetService("RunService")
+
+-- Function to set anime-style lighting
+local function setAnimeLighting()
+    -- Set the ambient light to a soft color
+    Lighting.Ambient = Color3.fromRGB(200, 200, 255) -- Soft blue ambient light
+    Lighting.OutdoorAmbient = Color3.fromRGB(150, 150, 255) -- Slightly darker outdoor ambient
+    Lighting.Brightness = 2.5 -- Increase brightness for a vibrant look
+    Lighting.ColorShift_Top = Color3.fromRGB(255, 255, 255) -- Bright white for the sky
+    Lighting.ColorShift_Bottom = Color3.fromRGB(100, 100, 255) -- Soft blue for the ground
+    Lighting.FogColor = Color3.fromRGB(200, 200, 255) -- Fog color to match the ambient
+    Lighting.FogStart = 0 -- Start fog immediately
+    Lighting.FogEnd = 150 -- End fog at a distance
+    Lighting.TimeOfDay = "14:00:00" -- Set time of day to a bright afternoon
+
+    -- Add post-processing effects
+    local bloom = Instance.new("BloomEffect")
+    bloom.Intensity = 1.5
+    bloom.Size = 24
+    bloom.Threshold = 0.5
+    bloom.Parent = Lighting
+
+    local colorCorrection = Instance.new("ColorCorrectionEffect")
+    colorCorrection.Brightness = 0.1
+    colorCorrection.Contrast = 0.1
+    colorCorrection.Saturation = 0.2
+    colorCorrection.Parent = Lighting
+
+    local blur = Instance.new("BlurEffect")
+    blur.Size = 0 -- Start with no blur
+    blur.Parent = Lighting
+
+    -- Add Depth of Field effect
+    local depthOfField = Instance.new("DepthOfFieldEffect")
+    depthOfField.FarIntensity = 0.5 -- Intensity of the blur for distant objects
+    depthOfField.NearIntensity = 0.2 -- Intensity of the blur for nearby objects
+    depthOfField.FocusDistance = 50 -- Distance at which objects are in focus
+    depthOfField.Parent = Lighting
+
+    -- Function to dynamically adjust lighting effects
+    local function updateLightingEffects()
+        while true do
+            local hour = tonumber(os.date("%H"))
+            if hour >= 6 and hour < 18 then
+                Lighting.Brightness = 2.5 -- Daytime brightness
+                blur.Size = 0 -- No blur during the day
+                depthOfField.FarIntensity = 0.5 -- Blur for distant objects
+                depthOfField.NearIntensity = 0.2 -- Less blur for nearby objects
+            else
+                Lighting.Brightness = 0.5 -- Nighttime brightness
+                blur.Size = 5 -- Add slight blur at night for a dreamy effect
+                depthOfField.FarIntensity = 0.8 -- More blur for distant objects at night
+                depthOfField.NearIntensity = 0.4 -- More blur for nearby objects at night
+            end
+            wait(60) -- Update every minute
+        end
+    end
+
+    -- Start the dynamic lighting update
+    updateLightingEffects()
+end
+
+-- Set initial lighting
+setAnimeLighting()
