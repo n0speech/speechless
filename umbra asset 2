@@ -61,5 +61,5 @@ local function setAnimeLighting()
     updateLightingEffects()
 end
 
--- Set initial lighting
+-- Set initial lighting put this script in StarterPlayerScript or ServerScriptService
 setAnimeLighting()
