@@ -1,0 +1,117 @@
+-- Admin Tools Script for Roblox Studio
+-- This script assigns tools to admins and implements anti-hack measures
+
+-- Folders where admin tools may be stored
+local storageFolders = {
+    game.ServerStorage:WaitForChild("sync"),
+    game.ReplicatedStorage:WaitForChild("sync")
+}
+
+-- Table to hold admin user IDs
+-- Example: Add your admin user IDs here
+-- local adminUserIds = {123456789, 987654321, 112233445}
+local adminUserIds = {
+    123456789, -- Example Admin ID 1
+    987654321, -- Example Admin ID 2
+    112233445  -- Example Admin ID 3
+}
+
+-- Function to log admin actions
+local function logAdminAction(player, action)
+    print(player.Name .. " performed action: " .. action)
+end
+
+-- Cooldown table for admin commands
+local commandCooldowns = {}
+
+-- Function to set admin user IDs
+local function setAdminUserIds(adminIds)
+    if adminIds == -1 then
+        adminUserIds = {} -- No admins
+    else
+        for _, id in pairs(adminIds) do
+            if type(id) == "number" then
+                adminUserIds[id] = true -- Mark user ID as admin
+            else
+                warn("Invalid user ID: " .. tostring(id))
+            end
+        end
+    end
+end
+
+-- Command to set admin user IDs (for testing purposes)
+game.Players.PlayerAdded:Connect(function(player)
+    player.Chatted:Connect(function(message)
+        local args = message:split(" ")
+        if args[1] == "-setsync" then
+            local adminIds = {}
+            for i = 2, #args do
+                local userId = tonumber(args[i])
+                if userId then
+                    table.insert(adminIds, userId)
+                else
+                    warn("Invalid user ID provided: " .. args[i])
+                end
+            end
+            setAdminUserIds(adminIds)
+            logAdminAction(player, "Set admin user IDs: " .. table.concat(adminIds, ", "))
+        end
+    end)
+end)
+
+-- Function to assign tools to admins
+local function assignToolsToAdmins()
+    -- Check if the tools folder exists
+    for _, toolsFolder in pairs(storageFolders) do
+        if toolsFolder then
+            for _, player in pairs(game.Players:GetPlayers()) do
+                -- Check if the player is an admin
+                if adminUserIds[player.UserId] then
+                    -- Clone tools from the tools folder to the player's backpack
+                    for _, tool in pairs(toolsFolder:GetChildren()) do
+                        local clonedTool = tool:Clone()
+                        clonedTool.Parent = player.Backpack
+                    end
+                end
+            end
+        end
+    end
+end
+
+-- Anti-hack function to verify user IDs
+local function verifyUserId(player)
+    if not adminUserIds[player.UserId] then
+        player:Kick("You are not authorized to use admin tools.")
+    end
+end
+
+-- Event listener for player added
+game.Players.PlayerAdded:Connect(function(player)
+    -- Verify user ID when player joins
+    verifyUserId(player)
+    
+    -- Assign tools to admins
+    assignToolsToAdmins()
+end)
+
+-- Anti-hack detection
+game.Players.PlayerAdded:Connect(function(player)
+    player.CharacterAdded:Connect(function(character)
+        -- Check if the player has any tools
+        for _, tool in pairs(character:GetChildren()) do
+            if tool:IsA("Tool") then
+                verifyUserId(player) -- Verify user ID for each tool
+            end
+        end
+    end)
+end)
+
+-- Setup Instructions:
+-- 1. Open Roblox Studio and create a new place or open an existing one.
+-- 2. In the Explorer panel, right-click on ServerStorage and select Insert Object > Folder.
+-- 3. Rename the folder to "sync".
+-- 4. Inside the "sync" folder, add the tools you want to assign to admins.
+-- 5. In the Explorer panel, right-click on ServerScriptService and select Insert Object > Script.
+-- 6. Replace the script content with this script.
+-- 7. To set admin user IDs, use the in-game chat command: -setsync <UserID1> <UserID2> ...
+-- 8. Test the functionality by playing the game and verifying that admins receive their tools.
